@@ -1,0 +1,256 @@
+% ======================================================================
+% TRABALHO: Pontos Turísticos da Baixada Santista - Análise de Similaridade do Cosseno
+% AUTOR: Lucas Conceição Marques
+% INSTITUIÇÃO: FATEC Rubens Lara
+% FORMATAÇÃO: Estilo ABNT 
+% ======================================================================
+
+\documentclass[12pt,oneside]{article} % Classe de documento padrão (artigo) -> relatório técnico
+% ----------------------------------------------------------------------
+% PACOTES DE CONFIGURAÇÃO
+% ----------------------------------------------------------------------
+\usepackage[brazil]{babel}            % Define o idioma como português 
+\usepackage[utf8]{inputenc}           % Codificação de caracteres UTF-8
+\usepackage[T1]{fontenc}              % Saída correta de acentuação
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=2cm]{geometry} % Margens padrão ABNT e tamanho do papel
+\usepackage{setspace}                 % Controla espaçamento entre linhas
+\usepackage{indentfirst}              % Faz o primeiro parágrafo de cada seção ser indentado
+\usepackage{titlesec}                 % Permite personalizar títulos e seções
+\usepackage{graphicx}                 % Inserção de figuras
+\usepackage{url}                      % Permite incluir URLs formatadas corretamente
+\usepackage[hidelinks]{hyperref}      % Cria links clicáveis no PDF sem as bordas coloridas
+\usepackage{titling}                  % Personalização do título e capa
+
+% ----------------------------------------------------------------------
+% CONFIGURAÇÕES DE FORMATAÇÃO
+% ----------------------------------------------------------------------
+\onehalfspacing                      % Espaçamento 1,5 entre linhas
+\setlength{\parindent}{1.25cm}       % Recuo de parágrafo padrão ABNT
+\setlength{\parskip}{0.2cm}          % Espaço entre parágrafos
+
+% ----------------------------------------------------------------------
+% INÍCIO DO DOCUMENTO
+% ----------------------------------------------------------------------
+\begin{document}
+
+% ----------------------------------------------------------------------
+% CAPA (formato simples ABNT)
+% ----------------------------------------------------------------------
+
+%textbf -> negrito
+%textit -> itálico
+
+\begin{center}
+    \textbf{FATEC RUBENS LARA} \\[4cm]
+
+    \textbf{LUCAS CONCEIÇÃO MARQUES} \\[6cm]
+
+    \textbf{PONTOS TURÍSTICOS DA BAIXADA SANTISTA:} \\[0.3cm]
+    \textbf{Análise de Similaridade do Cosseno} \\[8cm]
+
+    \textbf{Santos} \\
+    \textbf{2025}
+\end{center}
+
+\newpage
+
+%================================
+%            sumário
+%=================================
+
+%Gera automaticamente o Sumário com base nas seções
+\newpage
+\renewcommand{\contentsname}{\centering Sumário} %centraliza o sumário
+\tableofcontents
+\newpage
+
+
+% ----------------------------------------------------------------------
+% INTRODUÇÃO
+% ----------------------------------------------------------------------
+
+\section{Introdução ao Tema}
+O tema consiste na análise de similaridade do cosseno aplicada aos pontos turísticos da Baixada Santista. 
+Nesse contexto, o usuário terá descrito o tipo de local que deseja visitar. 
+Com base em arquivos \texttt{.txt} armazenados em um arquivo ZIP, contendo informações sobre diferentes pontos turísticos, 
+o sistema realizará a análise para indicar qual local apresenta maior similaridade com a preferência do usuário.
+
+%\texttt -> destacar arquivos, deixar monoespaçado
+
+
+% ----------------------------------------------------------------------
+% DESENVOLVIMENTO
+% ----------------------------------------------------------------------
+\section{Desenvolvimento do Trabalho}
+
+\subsection{Importação das Bibliotecas e Ferramentas}
+O programa se inicia com a importação das seguintes bibliotecas: 
+\textbf{Numpy} (para manipulação de vetores e cálculos numéricos), 
+\textbf{NLTK} (essencial para o Processamento de Linguagem Natural e utilizada para obter as \textit{stopwords}). 
+O comando \texttt{nltk.download('stopwords')} baixa o conjunto de dados necessário.
+
+Em seguida, importam-se: \textbf{OS} (para interagir com o sistema operacional, manipulando caminhos de arquivo), 
+\textbf{Zipfile} (para manipular arquivos ZIP), 
+\textbf{TfidfVectorizer} (do \texttt{Sklearn}, para conversão de textos em vetores TF-IDF) 
+e \textbf{cosine\_similarity} (para o cálculo da similaridade do cosseno).
+
+\begin{figure}[h!] %h -> here(aqui)
+    \centering
+    \includegraphics[width=0.9\textwidth]{figura1.png} % ajusta o tamanho
+    \caption{Trecho inicial do código em Python com importações e setup.} %legenda numerada
+\end{figure}
+
+
+
+% ----------------------------------------------------------------------
+% SEÇÃO 1
+% ----------------------------------------------------------------------
+\section{1. Pontos Turísticos}
+
+%h -> here(aqui)
+%  width  -> ajusta o tamanho
+%\caption -> legenda numerada
+
+\begin{figure}[h!] 
+    \centering
+    \includegraphics[width=0.9\textwidth]{figura2.png} 
+    \caption{Trecho de código referente ao upload do arquivo ZIP.} 
+\end{figure}
+
+\subsection{1.1 Upload}
+\textbf{Descrição:} Nesse ponto, o módulo \texttt{files} (do Google Colab) permite interações com o navegador. 
+O comando \texttt{files.upload()} executa um pop-up solicitando o upload do arquivo \texttt{pontos\_turisticos.zip} 
+e armazena seu conteúdo na variável \texttt{uploaded}.
+
+
+
+\subsection{1.2 Extrair Conteúdo do ZIP}
+\textbf{Descrição:} A variável \texttt{zip\_filename} define o nome do arquivo ZIP esperado. 
+A estrutura condicional verifica se o arquivo foi carregado com êxito. 
+Se sim, \texttt{with zipfile.ZipFile(zip\_filename, 'r')} abre o arquivo em modo de leitura e 
+\texttt{zip\_ref.extractall('.')} extrai todo o conteúdo do ZIP para o diretório atual. 
+Caso ocorra erro, uma mensagem de aviso será exibida.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figura3.png} 
+    \caption{Código para extração do conteúdo do arquivo ZIP.} 
+\end{figure}
+
+
+
+\subsection{1.3 Carregar os Arquivos}
+\textbf{Descrição:} Após a extração, define-se a variável \texttt{descrição}, que será a consulta (\textit{query}) de busca. 
+Cria-se um dicionário \texttt{pontos\_dados} para armazenar o nome e o texto de cada ponto turístico. 
+Um laço percorre os arquivos do diretório, filtrando apenas os com extensão \texttt{.txt}. 
+A função \texttt{os.path.join()} constrói o caminho completo e o conteúdo é lido e armazenado. 
+No dicionário, o nome do ponto é a chave e o texto é o valor. Listas são criadas com os nomes e textos, formando \texttt{compare\_list}, que contém a descrição do usuário e os textos dos pontos turísticos.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figura4.png}
+    \caption{Trecho do código responsável por carregar e ler os arquivos de texto.}
+\end{figure}
+
+\vspace{2cm}
+%cria espaço vertical de 2cm
+
+% ----------------------------------------------------------------------
+% STOPWORDS
+% ----------------------------------------------------------------------
+
+\section{Stopwords}
+As \textit{stopwords} são importadas de \texttt{nltk.corpus}. 
+Com \texttt{set()}, obtém-se a lista padrão em português. 
+Em seguida, cria-se uma lista personalizada (\texttt{custom\_stop}) com palavras genéricas (\textit{local}, \textit{visita}, etc.) e termos adicionais. 
+A lista final \texttt{br\_stop} é o resultado da união entre a lista padrão e a personalizada.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figura5.png}
+    \caption{Código de criação da lista de \textit{stopwords} padrão e personalizada.}
+\end{figure}
+% ----------------------------------------------------------------------
+% VETORIZAÇÃO
+% ----------------------------------------------------------------------
+
+\section{Vetorização do Texto}
+Com as stopwords definidas, \texttt{TfidfVectorizer()} é usado para removê-las durante a vetorização. 
+O método \texttt{fit\_transform()} analisa e transforma os textos em vetores.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figura6.png}
+    \caption{Código responsável pela vetorização dos textos usando TF-IDF.}
+\end{figure}
+% ----------------------------------------------------------------------
+% SIMILARIDADE
+% ----------------------------------------------------------------------
+
+
+\section{Impressão das Similaridades}
+A biblioteca \texttt{cosine\_similarity} calcula a similaridade de cosseno entre os vetores da descrição do usuário e os dos pontos turísticos. 
+O resultado é transformado em uma lista simples com \texttt{flatten()}. 
+Com \texttt{numpy.arccos()} e \texttt{numpy.degrees()}, obtém-se o ângulo em graus. 
+O programa imprime os nomes, similaridades e ângulos, indicando o ponto mais próximo do desejado.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figura7.png}
+    \caption{Código para o cálculo da similaridade de cosseno entre o texto do usuário e os pontos turísticos.}
+\end{figure}
+
+% ----------------------------------------------------------------------
+% RESULTADOS
+% ----------------------------------------------------------------------
+
+
+
+\section{Output}
+Analisando os dados obtidos, observa-se que o ponto turístico com maior taxa de similaridade e menor ângulo corresponde às praias, 
+enquanto os mais distantes são museus e centros históricos.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figura8.png}
+    \caption{imprime o resultado.}
+\end{figure}
+
+
+
+\section{Ponto Turístico Recomendado}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figura9.png}
+    \caption{Trecho final do código que identifica o ponto turístico mais similar.}
+\end{figure}
+
+
+\begin{center}
+\begin{tabular}{|p{14cm}|} %tabular -> ambiente de tabela, p{14} -> cria uma única coluna de largura fixa de 14cm
+\hline 
+\textbf{✅ Praia da Enseada é o ponto turístico mais similar à sua descrição com 76.74 graus.} \\[0.3cm]
+A praia mais extensa do Guarujá, com cerca de 6 km de comprimento. É famosa por suas águas calmas e rasas, o que a torna perfeita para famílias com crianças e para a prática de esportes náuticos como stand up paddle e caiaque. 
+A orla é repleta de hotéis, restaurantes e quiosques com boa infraestrutura, sendo um dos pontos mais movimentados da cidade. \\ 
+\hline %cria uma linha horizontal
+\end{tabular}
+\end{center}
+
+Para finalizar, a função \texttt{argmax()} localiza o ID com maior similaridade e obtém o nome e texto do ponto turístico mais semelhante — neste caso, a \textbf{Praia da Enseada}, com taxa de similaridade de 0.229 e ângulo de 76.74 graus.
+
+
+\vspace{2cm}
+
+% ----------------------------------------------------------------------
+% REFERÊNCIAS
+% ----------------------------------------------------------------------
+\section{Referências}
+
+MATEMÁTICA COM PROFA JAQUELINE SILVA. \textit{Introdução ao LaTeX e ao Overleaf | Aula 01}. 
+YouTube, 1 dez. 2019. Disponível em: \url{https://youtu.be/Y1vdXYttLSA?si=XPlbguzwkShXvtXF}. Acesso em: 25 out. 2025.
+
+SIMPLE TECH. \textit{Python Cosine Similarity - sklearn TfidfVectorizer and Spacy en\_core\_web\_lg}. 
+YouTube, 9 ago. 2022. Disponível em: \url{https://youtu.be/DIxxz_DvqLA?si=syqwoDYpep8Zyd-0}. Acesso em: 25 out. 2025.
+
+\end{document}
